@@ -349,7 +349,9 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 		/**
 		 *  case 2: Receiver already has access to the resource: DENY and reply
 		 */
-		
+        if(CS_BUSY){
+            message.setAcknowledged(false);
+        }
 		
 		/**
 		 *  case 3: Receiver wants to access resource but is yet to (compare own multicast message to received message
