@@ -407,7 +407,7 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 		// perform operation by using the Operations class 
 		// Release locks after this operation
 		if(message.getOptype() == OperationType.WRITE) {
-			Operations ope = new Operations(this, message);
+			Operations ope = new Operations(this ,message, activenodesforfile);
 			ope.performOperation();
 			releaseLocks();
 		}
