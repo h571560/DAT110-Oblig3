@@ -207,7 +207,11 @@ public class MutexProcess extends UnicastRemoteObject implements ProcessInterfac
 		// check the operation type: we expect a WRITE operation to do this. 
 		// perform operation by using the Operations class 
 		// Release locks after this operation
-		
+		if(message.getOptype() == OperationType.WRITE) {
+			Operations ope = new Operations(this, message);
+			ope.performOperation();
+			releaseLocks();
+		}
 	}
 	
 	@Override
