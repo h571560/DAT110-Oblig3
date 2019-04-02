@@ -6,6 +6,7 @@ import java.rmi.AccessException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -117,7 +118,7 @@ public class MutexProcess extends UnicastRemoteObject implements ProcessInterfac
 		
 		 
 		// randomize - shuffle list each time - to get random processes each time
-		
+		Collections.shuffle(replicas);
 		// multicast message to N/2 + 1 processes (random processes) - block until feedback is received
 		
 		// do something with the acknowledgement you received from the voters - Idea: use the queueACK to collect GRANT/DENY messages and make sure queueACK is synchronized!!!
