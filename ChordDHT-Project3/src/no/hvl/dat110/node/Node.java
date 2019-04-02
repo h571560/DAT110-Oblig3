@@ -311,16 +311,18 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 	private boolean multicastMessage(Message message) throws AccessException, RemoteException {
 
 		// the same as MutexProcess - see MutexProcess
-		fingerTable.remove(this);            // remove this process from the list
+		ArrayList<Message> list = new ArrayList<Message>();
 
 		// randomize - shuffle list each time - to get random processes each time
-		Collections.shuffle(fingerTable);
+		Collections.shuffle(list);
+
 		// multicast message to N/2 + 1 processes (random processes) - block until feedback is received
 		synchronized (queueACK) {
-			for (ChordNodeInterface c: fingerTable) {
+			for (int i = 0; i<list.size(); i ++) {
 				try {
-					ChordNodeInterface cI = Util.registryHandle(c);
-					queueACK.add(cI.onMessageReceived(message));
+					Registry nodeReg = Util.locateRegistry(list.get(i).getNodeIP());
+					ChordNodeInterface node =(ChordNodeInterface)nodeReg.lookup(list.get(i).getNodeID().toString());
+					queueACK.add(node.onMessageReceived(message));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -404,6 +406,11 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 		// check the operation type: we expect a WRITE operation to do this. 
 		// perform operation by using the Operations class 
 		// Release locks after this operation
+		if(message.getOptype() == OperationType.WRITE) {
+			Operations ope = new Operations(this, message);
+			ope.performOperation();
+			releaseLocks();
+		}
 		
 	}
 	
