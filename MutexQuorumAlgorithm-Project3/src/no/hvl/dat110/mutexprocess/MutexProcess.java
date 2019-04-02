@@ -135,7 +135,7 @@ public class MutexProcess extends UnicastRemoteObject implements ProcessInterfac
 		// compute election result - Idea call majorityAcknowledged()
 		
 		
-		return false;  // change to the election result			
+		return majorityAcknowledged();  // change to the election result
 
 	}
 	
