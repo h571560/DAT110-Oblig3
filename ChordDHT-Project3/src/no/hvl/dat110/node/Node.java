@@ -335,7 +335,6 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 	public Message onMessageReceived(Message message) throws RemoteException {
 		
 		// increment the local clock
-        counter++;
 		// Hint: for all the 3 cases, use Message to send GRANT or DENY. e.g. message.setAcknowledgement(true) = GRANT
 		
 		/**
