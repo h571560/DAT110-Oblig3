@@ -377,11 +377,8 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 		// count the number of yes (i.e. where message.isAcknowledged = true)
 		// check if it is the majority or not
 		// return the decision (true or false)
-
-						
-						
-						
-		return false;			// change this to the result of the vote
+		counter = (int) queueACK.stream().filter(x -> x.isAcknowledged()).count();
+		return counter >= quorum;// change this to the result of the vote
 	}
 
 	@Override
