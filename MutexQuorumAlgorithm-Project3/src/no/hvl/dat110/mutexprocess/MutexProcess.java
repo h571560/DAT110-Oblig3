@@ -164,7 +164,16 @@ public class MutexProcess extends UnicastRemoteObject implements ProcessInterfac
 		/**
 		 *  case 3: Receiver wants to access resource but is yet to (compare own multicast message to received message
 		 *  the message with lower timestamp wins) - GRANT if received is lower, acquirelock and reply
-		 */		
+		 */
+
+			if(WANTS_TO_ENTER_CS){
+				if(message.getClock() < counter){
+					message.setAcknowledged(true);
+					acquireLock();
+				} else {
+					message.setAcknowledged(false);
+				}
+			}
 		
 		
 		return null;
