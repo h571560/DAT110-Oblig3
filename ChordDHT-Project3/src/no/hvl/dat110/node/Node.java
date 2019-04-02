@@ -392,6 +392,9 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 		
 		// release CS lock if voter initiator says he was denied access bcos he lacks majority votes
 		// otherwise lock is kept
+		if(!message.isAcknowledged()) {
+			releaseLocks();
+		}
 
 	}
 
