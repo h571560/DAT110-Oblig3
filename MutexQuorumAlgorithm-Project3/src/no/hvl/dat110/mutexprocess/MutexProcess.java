@@ -194,7 +194,9 @@ public class MutexProcess extends UnicastRemoteObject implements ProcessInterfac
 	public void onReceivedVotersDecision(Message message) throws RemoteException {
 		
 		// release CS lock if voter initiator says he was denied access bcos he lacks majority votes
-		
+        if(!message.isAcknowledged()) {
+            releaseLocks();
+        }
 		// otherwise lock is kept
 
 	}
