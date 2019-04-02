@@ -14,16 +14,11 @@ import java.math.BigInteger;
 //import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.AccessException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import no.hvl.dat110.rpc.interfaces.ChordNodeInterface;
 import no.hvl.dat110.util.Hash;
@@ -351,6 +346,7 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 		 */
         if(CS_BUSY){
             message.setAcknowledged(false);
+            return message;
         }
 		
 		/**
@@ -365,10 +361,11 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 			} else {
 				message.setAcknowledged(false);
 			}
+			return message;
 		}
 		
 		
-		return message;
+		return null;
 		
 	}
 	
@@ -433,17 +430,24 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 	@Override
 	public void multicastVotersDecision(Message message) throws RemoteException {
 		// multicast voters decision to the rest of the replicas (i.e activenodesforfile)
-		for(Message m: activenodesforfile){
+		Set<Message> replicas = activenodesforfile;
+		// don't repeat the operation for the initiating process
+
+		for(Message activenodes : replicas) {
+			String nodeip = activenodes.getNodeIP();
+			String nodeid = activenodes.getNodeID().toString();
 			try {
-				 ChordNodeInterface cI = Util.registryHandle(m);
-				cI.onReceivedUpdateOperation(m);
+				Registry registry = Util.locateRegistry(nodeip);		// locate the registry and see if the node is still active
+				ChordNodeInterface node = (ChordNodeInterface) registry.lookup(nodeid);
 
-			} catch(java.rmi.NotBoundException e){
-				e.printStackTrace();
+				node.onReceivedUpdateOperation(message);
 
+			} catch (NotBoundException e) {
+
+				//e.printStackTrace();
 			}
+		}
 		}
 
 	}
 
-}
