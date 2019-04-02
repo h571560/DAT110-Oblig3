@@ -431,10 +431,18 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 	}	
 	
 	@Override
-	public void multicastVotersDecision(Message message) throws RemoteException {	
-		
+	public void multicastVotersDecision(Message message) throws RemoteException {
 		// multicast voters decision to the rest of the replicas (i.e activenodesforfile)
+		for(Message m: activenodesforfile){
+			try {
+				 ChordNodeInterface cI = Util.registryHandle(m);
+				cI.onReceivedUpdateOperation(m);
 
+			} catch(java.rmi.NotBoundException e){
+				e.printStackTrace();
+
+			}
+		}
 
 	}
 
