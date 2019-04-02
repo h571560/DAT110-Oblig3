@@ -113,34 +113,35 @@ public class MutexProcess extends UnicastRemoteObject implements ProcessInterfac
 	
 	// multicast message to N/2 + 1 processes (random processes)
 	private boolean multicastMessage(Message message, int n) throws AccessException, RemoteException {
-		
-		replicas.remove(this.procStubname);			// remove this process from the list
-		
-		 
-		// randomize - shuffle list each time - to get random processes each time
-		Collections.shuffle(replicas);
-		// multicast message to N/2 + 1 processes (random processes) - block until feedback is received
-		synchronized (queueACK){
-			for (int i = 0; i < n; i++){
-				String s = replicas.get(i);
-				try {
-					ProcessInterface pI = Util.registryHandle(s);
-					queueACK.add(pI.onMessageReceived(message));
-				} catch (java.rmi.NotBoundException e) {
-					e.printStackTrace();
-				}
-			}
-		// do something with the acknowledgement you received from the voters - Idea: use the queueACK to collect GRANT/DENY messages and make sure queueACK is synchronized!!!
-		
-		// compute election result - Idea call majorityAcknowledged()
-		
-		
-		return majorityAcknowledged();  // change to the election result
 
-	}
+        replicas.remove(this.procStubname);            // remove this process from the list
+
+
+        // randomize - shuffle list each time - to get random processes each time
+        Collections.shuffle(replicas);
+        // multicast message to N/2 + 1 processes (random processes) - block until feedback is received
+        synchronized (queueACK) {
+            for (int i = 0; i < n; i++) {
+                String s = replicas.get(i);
+                try {
+                    ProcessInterface pI = Util.registryHandle(s);
+                    queueACK.add(pI.onMessageReceived(message));
+                } catch (java.rmi.NotBoundException e) {
+                    e.printStackTrace();
+                }
+            }
+            // do something with the acknowledgement you received from the voters - Idea: use the queueACK to collect GRANT/DENY messages and make sure queueACK is synchronized!!!
+
+            // compute election result - Idea call majorityAcknowledged()
+
+
+            return majorityAcknowledged();  // change to the election result
+
+        }
+    }
 	
 	@Override
-	public Message onMessageReceived(Message message) throws RemoteException {
+	public Message onMessageReceived(Message message) throws RemoteException{
 		
 		// increment the local clock
 
@@ -176,7 +177,7 @@ public class MutexProcess extends UnicastRemoteObject implements ProcessInterfac
 			}
 		
 		
-		return null;
+		return message;
 	}
 	
 	public boolean majorityAcknowledged() throws RemoteException {
