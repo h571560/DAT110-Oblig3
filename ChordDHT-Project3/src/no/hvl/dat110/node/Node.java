@@ -444,7 +444,7 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 
 			} catch (NotBoundException e) {
 
-				//e.printStackTrace();
+				e.printStackTrace();
 			}
 		}
 		}
