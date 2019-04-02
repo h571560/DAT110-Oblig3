@@ -430,7 +430,7 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 	@Override
 	public void multicastVotersDecision(Message message) throws RemoteException {
 		// multicast voters decision to the rest of the replicas (i.e activenodesforfile)
-		Set<Message> replicas = activenodesforfile;
+		ArrayList<Message> replicas = new ArrayList<Message>(activenodesforfile);
 		// don't repeat the operation for the initiating process
 
 		for(Message activenodes : replicas) {
@@ -440,7 +440,7 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 				Registry registry = Util.locateRegistry(nodeip);		// locate the registry and see if the node is still active
 				ChordNodeInterface node = (ChordNodeInterface) registry.lookup(nodeid);
 
-				node.onReceivedUpdateOperation(message);
+				node.onMessageReceived(message);
 
 			} catch (NotBoundException e) {
 
