@@ -93,7 +93,7 @@ public class MutexProcess extends UnicastRemoteObject implements ProcessInterfac
 		// multicast read request to start the voting to N/2 + 1 replicas (majority) - optimal. You could as well send to all the replicas that have the file
 		
 		
-		return false;		// change to the election result
+		return multicastMessage(message,quorum);		// change to the election result
 	}
 	
 	public boolean requestReadOperation(Message message) throws RemoteException {
