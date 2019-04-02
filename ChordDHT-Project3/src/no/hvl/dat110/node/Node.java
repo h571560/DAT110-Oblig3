@@ -317,10 +317,9 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 		Collections.shuffle(fingerTable);
 		// multicast message to N/2 + 1 processes (random processes) - block until feedback is received
 		synchronized (queueACK) {
-			for (int i = 0; i < fingerTable.size(); i++) {
-				String s = fingerTable.get(i).toString();
+			for (ChordNodeInterface c: fingerTable) {
 				try {
-					ChordNodeInterface cI = Util.registryHandle( this);
+					ChordNodeInterface cI = Util.registryHandle(c);
 					queueACK.add(cI.onMessageReceived(message));
 				} catch (Exception e) {
 					e.printStackTrace();
