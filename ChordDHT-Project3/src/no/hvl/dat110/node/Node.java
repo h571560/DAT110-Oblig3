@@ -367,7 +367,7 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 		}
 		
 		
-		return null;
+		return message;
 		
 	}
 	
