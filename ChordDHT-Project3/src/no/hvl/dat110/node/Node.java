@@ -309,8 +309,25 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 	
 	// multicast message to N/2 + 1 processes (random processes)
 	private boolean multicastMessage(Message message) throws AccessException, RemoteException {
-		
+
 		// the same as MutexProcess - see MutexProcess
+		replicas.remove(this.procStubname);            // remove this process from the list
+
+
+		// randomize - shuffle list each time - to get random processes each time
+		Collections.shuffle(fingerTable);
+		// multicast message to N/2 + 1 processes (random processes) - block until feedback is received
+		synchronized (queueACK) {
+			for (int i = 0; i < fingerTable.size(); i++) {
+				String s = fingerTable.get(i).toString();
+				try {
+					ProcessInterface pI = Util.registryHandle(s);
+					queueACK.add(pI.onMessageReceived(message));
+				} catch (java.rmi.NotBoundException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		
 		return false;
 	}
