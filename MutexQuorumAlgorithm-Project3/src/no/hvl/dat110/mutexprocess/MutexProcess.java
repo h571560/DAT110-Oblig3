@@ -232,7 +232,17 @@ public class MutexProcess extends UnicastRemoteObject implements ProcessInterfac
 	
 	@Override
 	public void multicastVotersDecision(Message message) throws RemoteException {	
-		// multicast voters decision to the rest of the replicas 
+		// multicast voters decision to the rest of the replicas
+		for(String s : replicas){
+			try {
+				ProcessInterface pI = Util.registryHandle(s);
+				pI.onReceivedUpdateOperation(message);
+
+			} catch(java.rmi.NotBoundException e){
+				e.printStackTrace();
+
+			}
+		}
 
 	}
 
