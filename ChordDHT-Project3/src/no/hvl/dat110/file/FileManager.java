@@ -125,9 +125,9 @@ public class FileManager extends Thread {
 	public boolean requestToReadFileFromAnyActiveNode(String filename) throws RemoteException, NotBoundException {
 		
 		// get all the activenodes that have the file (replicas) i.e. requestActiveNodesForFile(String filename)
-			
+			requestActiveNodesForFile(filename);
 		// choose any available node
-		
+		for(Node:)
 		// locate the registry and see if the node is still active by retrieving its remote object
 		
 		// build the operation to be performed - Read and request for votes in existing active node message
