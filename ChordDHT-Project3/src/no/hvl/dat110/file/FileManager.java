@@ -88,11 +88,18 @@ public class FileManager extends Thread {
 	public Set<Message> requestActiveNodesForFile(String filename) throws RemoteException {
 		
 		// generate the N replica keyids from the filename
-		
+		Set<Message> activeNodesForFile = null;
+
 		// create replicas
+		createReplicaFiles(filename);
 		
-		// findsuccessors for each file replica and save the result (fileID) for each successor 
-		
+		// findsuccessors for each file replica and save the result (fileID) for each successor
+		try {
+			distributeReplicaFiles();
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
 		// if we find the successor node of fileID, we can retrieve the message associated with a fileID by calling the getFilesMetadata() of chordnode.
 		
 		// save the message in a list but eliminate duplicated entries. e.g a node may be repeated because it maps more than one replicas to its id. (use checkDuplicateActiveNode)
