@@ -105,17 +105,11 @@ public class FileManager extends Thread {
 				}
 			}
 		}
-		try {
-			distributeReplicaFiles();
-		}
-		catch(IOException e){
-			e.printStackTrace();
-		}
 		// if we find the successor node of fileID, we can retrieve the message associated with a fileID by calling the getFilesMetadata() of chordnode.
 		
 		// save the message in a list but eliminate duplicated entries. e.g a node may be repeated because it maps more than one replicas to its id. (use checkDuplicateActiveNode)
 		
-		return null;	// return value is a Set of type Message		
+		return activeNodesForFile;	// return value is a Set of type Message
 	}
 	
 	private boolean checkDuplicateActiveNode(Set<Message> activenodesdata, Message nodetocheck) {
