@@ -88,12 +88,23 @@ public class FileManager extends Thread {
 	public Set<Message> requestActiveNodesForFile(String filename) throws RemoteException {
 		
 		// generate the N replica keyids from the filename
-		Set<Message> activeNodesForFile = null;
+		Set<Message> activeNodesForFile = new HashSet<Message>();
 
 		// create replicas
 		createReplicaFiles(filename);
 		
 		// findsuccessors for each file replica and save the result (fileID) for each successor
+		for(int i=0;i<replicafiles.length;i++){
+			BigInteger fileID = (BigInteger)replicafiles[i];
+			ChordNodeInterface succesorOfFileID = chordnode.findSuccessor(fileID);
+
+			if(succesorOfFileID != null){
+				Message m = succesorOfFileID.getFilesMetadata().get(fileID);
+				if(!checkDuplicateActiveNode(activeNodesForFile,m)){
+					activeNodesForFile.add(m);
+				}
+			}
+		}
 		try {
 			distributeReplicaFiles();
 		}
