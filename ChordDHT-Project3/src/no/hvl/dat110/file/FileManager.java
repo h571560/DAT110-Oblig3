@@ -1,11 +1,5 @@
 package no.hvl.dat110.file;
 
-
-/**
- * @author tdoy
- * dat110 - demo/exercise
- */
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -13,24 +7,25 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.ArrayList;
-import java.util.Comparator;
+//import java.util.ArrayList;
+//import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
+//import java.util.List;
 import java.util.Set;
 
 import no.hvl.dat110.node.Message;
-import no.hvl.dat110.node.OperationType;
+//import no.hvl.dat110.node.OperationType;
 import no.hvl.dat110.node.Operations;
 import no.hvl.dat110.rpc.interfaces.ChordNodeInterface;
 import no.hvl.dat110.util.Hash;
-import no.hvl.dat110.util.Util;
+//import no.hvl.dat110.util.Util;
 
 public class FileManager extends Thread {
 	
 	private BigInteger[] replicafiles;					// array stores replicated files for distribution to matching nodes
-	private int nfiles = 4;								// let's assume each node manages nfiles (5 for now) - can be changed from the constructor
+	private int nfiles;								// let's assume each node manages nfiles (5 for now) - can be changed from the constructor
 	private ChordNodeInterface chordnode;
 	
 	public FileManager(ChordNodeInterface chordnode, int N) throws RemoteException {
@@ -61,13 +56,13 @@ public class FileManager extends Thread {
 		//System.out.println("Generated replica file keyids for "+chordnode.getNodeIP()+" => "+Arrays.asList(replicafiles));
 	}
 	
-	public void distributeReplicaFiles() throws IOException {
+	private void distributeReplicaFiles() throws IOException {
 		
 		// lookup(keyid) operation for each replica
 		// findSuccessor() function should be invoked to find the node with identifier id >= keyid and store the file (create & write the file)
 		
 		for(int i=0; i<replicafiles.length; i++) {
-			BigInteger fileID = (BigInteger) replicafiles[i];
+			BigInteger fileID = replicafiles[i];
 			ChordNodeInterface succOfFileID = chordnode.findSuccessor(fileID);
 			
 			// if we find the successor node of fileID, we can assign the file to the successor. This should always work even with one node
@@ -81,21 +76,21 @@ public class FileManager extends Thread {
 	
 	/**
 	 * 
-	 * @param filename
+	 * @param filename name of file
 	 * @return list of active nodes in a list of messages having the replicas of this file
-	 * @throws RemoteException 
+	 * @throws RemoteException throws exception
 	 */
 	public Set<Message> requestActiveNodesForFile(String filename) throws RemoteException {
 		
 		// generate the N replica keyids from the filename
-		Set<Message> activeNodesForFile = new HashSet<Message>();
+		Set<Message> activeNodesForFile = new HashSet<>();
 
 		// create replicas
 		createReplicaFiles(filename);
 		
 		// findsuccessors for each file replica and save the result (fileID) for each successor
 		for(int i=0;i<replicafiles.length;i++){
-			BigInteger fileID = (BigInteger)replicafiles[i];
+			BigInteger fileID = replicafiles[i];
 			ChordNodeInterface succesorOfFileID = chordnode.findSuccessor(fileID);
 
 			if(succesorOfFileID != null){
@@ -126,12 +121,20 @@ public class FileManager extends Thread {
 		boolean request = false;
 		// get all the activenodes that have the file (replicas) i.e. requestActiveNodesForFile(String filename)
 		Set<Message> nodes = requestActiveNodesForFile(filename);
+		Message message = null;
 		// choose any available node
-		Message message = nodes.iterator().next();
+		if(!nodes.isEmpty()) {
+			message = nodes.iterator().next();
+		}
+		ChordNodeInterface node = null;
 		// locate the registry and see if the node is still active by retrieving its remote object
-		registry
-		// build the operation to be performed - Read and request for votes in existing active node message
-		
+		if(message != null) {
+			Registry reg = LocateRegistry.getRegistry(message.getNodeIP());
+			node = (ChordNodeInterface) reg.lookup(message.getNodeID().toString());
+
+			// build the operation to be performed - Read and request for votes in existing active node message
+			request = node.requestReadOperation(message);
+		}
 		// set the active nodes holding replica files in the contact node (setActiveNodesForFile)
  		
 		// set the NodeIP in the message (replace ip with )
@@ -154,10 +157,26 @@ public class FileManager extends Thread {
 		// send message to let replicas release read lock they are holding
 		
 		// release locks after operations
-		
+		if(request) {
+			try {
+				node.multicastVotersDecision(message);
+				node.acquireLock();
+				try {
+					sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				Operations operation = new Operations(node, message, nodes);
+				operation.performOperation();
+				node.multicastUpdateOrReadReleaseLockOperation(message);
+				node.releaseLocks();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
 			
-			
-		return false;		// change to your final answer
+		return request;		// change to your final answer
 	}
 	
 	public boolean requestWriteToFileFromAnyActiveNode(String filename, String newcontent) throws RemoteException, NotBoundException {
@@ -197,8 +216,7 @@ public class FileManager extends Thread {
 
 	/**
 	 * create the localfile with the node's name and id as content of the file
-	 * @param nodename
-	 * @throws RemoteException 
+	 * @throws RemoteException  throws a remote exception
 	 */
 	public void createLocalFile() throws RemoteException {
 		String nodename = chordnode.getNodeIP();
