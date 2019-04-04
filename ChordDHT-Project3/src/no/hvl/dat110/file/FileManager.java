@@ -21,7 +21,7 @@ import no.hvl.dat110.node.Operations;
 import no.hvl.dat110.rpc.interfaces.ChordNodeInterface;
 import no.hvl.dat110.util.Hash;
 //import no.hvl.dat110.util.Util;
-
+@SuppressWarnings("Duplicates")
 public class FileManager extends Thread {
 	
 	private BigInteger[] replicafiles;					// array stores replicated files for distribution to matching nodes
@@ -164,7 +164,6 @@ public class FileManager extends Thread {
 				// perform operation by calling Operations class
 				Operations operation = new Operations(node, message, nodes);
 				operation.performOperation();
-				distributeReplicaFiles();
 				// send message to let replicas release read lock they are holding
 				node.multicastUpdateOrReadReleaseLockOperation(message);
 				// release locks after operations
@@ -177,7 +176,6 @@ public class FileManager extends Thread {
 			
 		return request;		// change to your final answer
 	}
-	
 	public boolean requestWriteToFileFromAnyActiveNode(String filename, String newcontent) throws RemoteException, NotBoundException {
 
 		boolean request = false;
@@ -209,25 +207,6 @@ public class FileManager extends Thread {
 		// set the active nodes holding replica files in the contact node (setActiveNodesForFile)
  		
 		// set the NodeIP in the message (replace ip with )
-
-		if(request) {
-			try {
-				node.multicastVotersDecision(message);
-				node.acquireLock();
-				try {
-					sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				Operations operation = new Operations(node, message, nodes);
-				operation.performOperation();
-				node.multicastUpdateOrReadReleaseLockOperation(message);
-				node.releaseLocks();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-		}
 		
 		// send a request to a node and get the voters decision
 		
@@ -244,8 +223,28 @@ public class FileManager extends Thread {
 		// update replicas and let replicas release CS lock they are holding
 		
 		// release locks after operations
+
+		if(request) {
+			try {
+				node.multicastVotersDecision(message);
+				node.acquireLock();
+				try {
+					sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				Operations operation = new Operations(node, message, nodes);
+				operation.performOperation();
+
+				node.multicastUpdateOrReadReleaseLockOperation(message);
+				node.releaseLocks();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
 		
-		return false;  // change to your final answer
+		return request;  // change to your final answer
 
 	}
 
