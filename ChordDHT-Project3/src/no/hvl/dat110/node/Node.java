@@ -304,7 +304,7 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 	
 	// multicast message to N/2 + 1 processes (random processes)
 	private boolean multicastMessage(Message message) throws AccessException, RemoteException {
-
+		queueACK.clear();
 		// the same as MutexProcess - see MutexProcess
 		ArrayList<Message> list = new ArrayList<Message>();
 
@@ -312,6 +312,7 @@ public class Node extends UnicastRemoteObject implements ChordNodeInterface {
 		Collections.shuffle(list);
 
 		// multicast message to N/2 + 1 processes (random processes) - block until feedback is received
+		quorum = activenodesforfile.size()/2 + 1;
 		synchronized (queueACK) {
 			for (int i = 0; i<list.size(); i ++) {
 				try {

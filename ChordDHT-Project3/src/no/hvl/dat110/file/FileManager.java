@@ -60,17 +60,16 @@ public class FileManager extends Thread {
 		
 		// lookup(keyid) operation for each replica
 		// findSuccessor() function should be invoked to find the node with identifier id >= keyid and store the file (create & write the file)
-		
-		for(int i=0; i<replicafiles.length; i++) {
-			BigInteger fileID = replicafiles[i];
+
+		for (BigInteger fileID : replicafiles) {
 			ChordNodeInterface succOfFileID = chordnode.findSuccessor(fileID);
-			
+
 			// if we find the successor node of fileID, we can assign the file to the successor. This should always work even with one node
-			if(succOfFileID != null) {
+			if (succOfFileID != null) {
 				succOfFileID.addToFileKey(fileID);
-				String initialcontent = chordnode.getNodeIP()+"\n"+chordnode.getNodeID();
-				succOfFileID.createFileInNodeLocalDirectory(initialcontent, fileID);			// copy the file to the successor local dir
-			}			
+				String initialcontent = chordnode.getNodeIP() + "\n" + chordnode.getNodeID();
+				succOfFileID.createFileInNodeLocalDirectory(initialcontent, fileID);            // copy the file to the successor local dir
+			}
 		}
 	}
 	
