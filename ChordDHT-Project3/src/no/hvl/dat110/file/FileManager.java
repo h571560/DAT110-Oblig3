@@ -120,6 +120,7 @@ public class FileManager extends Thread {
 	public boolean requestToReadFileFromAnyActiveNode(String filename) throws RemoteException, NotBoundException {
 		boolean request = false;
 		// get all the activenodes that have the file (replicas) i.e. requestActiveNodesForFile(String filename)
+		// set the active nodes holding replica files in the contact node (setActiveNodesForFile)
 		Set<Message> nodes = requestActiveNodesForFile(filename);
 		Message message = null;
 		// choose any available node
@@ -135,43 +136,35 @@ public class FileManager extends Thread {
 			// build the operation to be performed - Read and request for votes in existing active node message
 			request = node.requestReadOperation(message);
 		}
-		// set the active nodes holding replica files in the contact node (setActiveNodesForFile)
- 		
+
 		// set the NodeIP in the message (replace ip with )
-		
 		
 		// send a request to a node and get the voters decision
 		
 		// put the decision back in the message
 		
 		// multicast voters' decision to the rest of the nodes
-		
-		// if majority votes
-		
-		// acquire lock to CS and also increments localclock
-		
-		// perform operation by calling Operations class
+
 		
 		// optional: retrieve content of file on local resource
-		
-		// send message to let replicas release read lock they are holding
 
+
+		// if majority votes
 		if(request) {
 			try {
+				// send message to let replicas release read lock they are holding
 				node.multicastVotersDecision(message);
+				// acquire lock to CS and also increments localclock
 				node.acquireLock();
 				try {
 					sleep(1000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
+				// perform operation by calling Operations class
 				Operations operation = new Operations(node, message, nodes);
 				operation.performOperation();
-				try{
-					distributeReplicaFiles();
-				}catch (Exception e){
-					e.printStackTrace();
-				}
+				distributeReplicaFiles();
 				// send message to let replicas release read lock they are holding
 				node.multicastUpdateOrReadReleaseLockOperation(message);
 				// release locks after operations
