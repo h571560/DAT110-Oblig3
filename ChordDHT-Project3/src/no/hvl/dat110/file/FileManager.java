@@ -155,8 +155,68 @@ public class FileManager extends Thread {
 		// optional: retrieve content of file on local resource
 		
 		// send message to let replicas release read lock they are holding
+
+		if(request) {
+			try {
+				node.multicastVotersDecision(message);
+				node.acquireLock();
+				try {
+					sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				Operations operation = new Operations(node, message, nodes);
+				operation.performOperation();
+				try{
+					distributeReplicaFiles();
+				}catch (Exception e){
+					e.printStackTrace();
+				}
+				// send message to let replicas release read lock they are holding
+				node.multicastUpdateOrReadReleaseLockOperation(message);
+				// release locks after operations
+				node.releaseLocks();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+		}
+			
+		return request;		// change to your final answer
+	}
+	
+	public boolean requestWriteToFileFromAnyActiveNode(String filename, String newcontent) throws RemoteException, NotBoundException {
+
+		boolean request = false;
+		// get all the activenodes that have the file (replicas) i.e. requestActiveNodesForFile(String filename)
+		Set<Message> nodes = requestActiveNodesForFile(filename);
+		Message message = null;
+		// choose any available node
+		if(!nodes.isEmpty()) {
+			message = nodes.iterator().next();
+		}
+		ChordNodeInterface node = null;
+		// locate the registry and see if the node is still active by retrieving its remote object
+		if(message != null) {
+			Registry reg = LocateRegistry.getRegistry(message.getNodeIP());
+			node = (ChordNodeInterface) reg.lookup(message.getNodeID().toString());
+
+			// build the operation to be performed - Read and request for votes in existing active node message
+			request = node.requestReadOperation(message);
+		}
 		
-		// release locks after operations
+		// get all the activenodes that have the file (replicas) i.e. requestActiveNodesForFile(String filename)
+		
+		// choose any available node
+		
+		// locate the registry and see if the node is still active by retrieving its remote object
+		
+		// build the operation to be performed - Read and request for votes in existing active node message
+		
+		// set the active nodes holding replica files in the contact node (setActiveNodesForFile)
+ 		
+		// set the NodeIP in the message (replace ip with )
+
 		if(request) {
 			try {
 				node.multicastVotersDecision(message);
@@ -175,24 +235,6 @@ public class FileManager extends Thread {
 			}
 
 		}
-			
-		return request;		// change to your final answer
-	}
-	
-	public boolean requestWriteToFileFromAnyActiveNode(String filename, String newcontent) throws RemoteException, NotBoundException {
-		
-		// get all the activenodes that have the file (replicas) i.e. requestActiveNodesForFile(String filename)
-		
-		// choose any available node
-		
-		// locate the registry and see if the node is still active by retrieving its remote object
-		
-		// build the operation to be performed - Read and request for votes in existing active node message
-		
-		// set the active nodes holding replica files in the contact node (setActiveNodesForFile)
- 		
-		// set the NodeIP in the message (replace ip with )
-		
 		
 		// send a request to a node and get the voters decision
 		
